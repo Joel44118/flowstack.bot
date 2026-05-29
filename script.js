@@ -127,13 +127,26 @@ and conversational.
     );
 
     const data =
-    await response.json();
+await response.json();
 
-    console.log(data);
+console.log(data);
 
-    const botReply =
-    data.choices[0]
-    .message.content;
+if(!data.choices) {
+
+  console.log(data);
+
+  addMessage(
+    "API Error: " +
+    JSON.stringify(data),
+    "System"
+  );
+
+  return;
+}
+
+const botReply =
+data.choices[0]
+.message.content;
 
     addMessage(botReply, "Flow");
 
