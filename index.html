@@ -3,46 +3,31 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta name="viewport"
-  content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-  <title>Flow AI</title>
+<title>Flow AI</title>
 
-  <link rel="stylesheet"
-  href="style.css">
+<link rel="stylesheet"
+href="style.css">
 
 </head>
 
 <body>
 
-<div class="app">
+<div class="container">
 
-  <div class="sidebar">
+  <canvas id="orb-canvas"></canvas>
+
+  <div class="overlay">
 
     <h1>FLOW</h1>
 
-    <div class="status">
-      ● Online
-    </div>
-
-    <button onclick="clearMemory()">
-      Clear Memory
-    </button>
-
-  </div>
-
-  <div class="main">
-
-    <div class="topbar">
-
-      <h2>Flow Assistant</h2>
-
-    </div>
-
-    <div id="chat-box"
-    class="chat-box"></div>
+    <p id="status">
+      Awaiting command...
+    </p>
 
     <div class="input-area">
 
