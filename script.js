@@ -1,5 +1,5 @@
 const API_KEY =
-"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";
+"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";
 
 const messagesContainer =
 document.getElementById("messages");
