@@ -1,11 +1,31 @@
 const API_KEY =
-"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";
+"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";
+
+/*
+====================================
+MODEL SECTION
+====================================
+
+You can change the model HERE later.
+
+Current model:
+deepseek/deepseek-chat-v3-0324:free
+*/
+
+const MODEL =
+"deepseek/deepseek-chat-v3-0324:free";
 
 const messagesContainer =
 document.getElementById("messages");
 
 const orb =
 document.querySelector(".orb");
+
+/*
+====================================
+MEMORY SYSTEM
+====================================
+*/
 
 let conversationHistory =
 JSON.parse(
@@ -45,15 +65,63 @@ function loadMessages() {
   conversationHistory.forEach(
     msg => {
 
+      const sender =
+      msg.role === "assistant"
+      ? "Flow"
+      : "You";
+
       addMessage(
         msg.content,
-        msg.role
+        sender
       );
     }
   );
 }
 
 loadMessages();
+
+/*
+====================================
+VOICE SYSTEM
+====================================
+*/
+
+function speak(text) {
+
+  window.speechSynthesis.cancel();
+
+  const speech =
+  new SpeechSynthesisUtterance(
+    text
+  );
+
+  speech.lang = "en-US";
+
+  speech.rate = 1;
+
+  speech.pitch = 1;
+
+  speech.volume = 1;
+
+  orb.style.boxShadow =
+  "0 0 140px #38bdf8";
+
+  speech.onend = () => {
+
+    orb.style.boxShadow =
+    "0 0 60px #38bdf8";
+  };
+
+  window.speechSynthesis.speak(
+    speech
+  );
+}
+
+/*
+====================================
+SEND MESSAGE
+====================================
+*/
 
 async function sendMessage() {
 
@@ -70,7 +138,9 @@ async function sendMessage() {
   addMessage(text, "You");
 
   conversationHistory.push({
+
     role: "user",
+
     content: text
   });
 
@@ -79,7 +149,7 @@ async function sendMessage() {
   input.value = "";
 
   orb.style.transform =
-  "scale(1.15)";
+  "scale(1.1)";
 
   try {
 
@@ -101,8 +171,7 @@ async function sendMessage() {
 
         body: JSON.stringify({
 
-          model:
-          "deepseek/deepseek-chat-v3-0324:free",
+          model: MODEL,
 
           messages: [
 
@@ -110,13 +179,17 @@ async function sendMessage() {
               role: "system",
 
               content: `
-You are Flow,
-a futuristic AI assistant.
+You are Flow.
 
-You are calm,
-intelligent,
-helpful,
-and conversational.
+A futuristic AI assistant.
+
+You are:
+- intelligent
+- calm
+- helpful
+- conversational
+- modern
+- efficient
 `
             },
 
@@ -127,28 +200,29 @@ and conversational.
     );
 
     const data =
-await response.json();
+    await response.json();
 
-console.log(data);
+    console.log(data);
 
-if(!data.choices) {
+    if(!data.choices) {
 
-  console.log(data);
+      addMessage(
+        "API Error: " +
+        JSON.stringify(data),
+        "System"
+      );
 
-  addMessage(
-    "API Error: " +
-    JSON.stringify(data),
-    "System"
-  );
+      return;
+    }
 
-  return;
-}
+    const botReply =
+    data.choices[0]
+    .message.content;
 
-const botReply =
-data.choices[0]
-.message.content;
-
-    addMessage(botReply, "Flow");
+    addMessage(
+      botReply,
+      "Flow"
+    );
 
     conversationHistory.push({
 
@@ -166,7 +240,7 @@ data.choices[0]
     console.error(error);
 
     addMessage(
-      "Error occurred.",
+      "System error occurred.",
       "System"
     );
   }
@@ -175,36 +249,11 @@ data.choices[0]
   "scale(1)";
 }
 
-function speak(text) {
-
-  window.speechSynthesis.cancel();
-
-  const speech =
-  new SpeechSynthesisUtterance(
-    text
-  );
-
-  speech.lang = "en-US";
-
-  speech.rate = 1;
-
-  speech.pitch = 1;
-
-  speech.volume = 1;
-
-  orb.style.boxShadow =
-  "0 0 120px #38bdf8";
-
-  speech.onend = () => {
-
-    orb.style.boxShadow =
-    "0 0 60px #38bdf8";
-  };
-
-  window.speechSynthesis.speak(
-    speech
-  );
-}
+/*
+====================================
+MICROPHONE SYSTEM
+====================================
+*/
 
 let recognition;
 
@@ -235,7 +284,7 @@ function startListening() {
   recognition.start();
 
   orb.style.boxShadow =
-  "0 0 140px #38bdf8";
+  "0 0 180px #38bdf8";
 
   recognition.onresult =
   function(event) {
@@ -255,6 +304,12 @@ function startListening() {
   function(event) {
 
     console.error(event.error);
+
+    addMessage(
+      "Mic Error: " +
+      event.error,
+      "System"
+    );
   };
 
   recognition.onend =
@@ -264,6 +319,12 @@ function startListening() {
     "0 0 60px #38bdf8";
   };
 }
+
+/*
+====================================
+ENTER KEY SUPPORT
+====================================
+*/
 
 document
 .getElementById("user-input")
@@ -277,6 +338,12 @@ document
     }
   }
 );
+
+/*
+====================================
+BACKGROUND NETWORK EFFECT
+====================================
+*/
 
 const canvas =
 document.getElementById(
@@ -362,9 +429,7 @@ function animateBackground() {
       const dy = a.y - b.y;
 
       const dist =
-      Math.sqrt(
-        dx * dx + dy * dy
-      );
+      Math.sqrt(dx * dx + dy * dy);
 
       if(dist < 120) {
 
