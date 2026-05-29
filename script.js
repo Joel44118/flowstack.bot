@@ -12,8 +12,8 @@ Current model:
 deepseek/deepseek-chat-v3-0324:free
 */
 
-const MODEL =
-"deepseek/deepseek-chat-v3-0324:free";
+const model:
+"mistralai/mistral-7b-instruct:free",
 
 const messagesContainer =
 document.getElementById("messages");
