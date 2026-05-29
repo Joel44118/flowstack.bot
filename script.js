@@ -1,100 +1,175 @@
-const API_KEY = "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";
+const API_KEY =
+"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";
 
-const statusText =
-document.getElementById("status");
+const messagesContainer =
+document.getElementById("messages");
 
-const canvas =
-document.getElementById("orb-canvas");
+const orb =
+document.querySelector(".orb");
 
-const ctx =
-canvas.getContext("2d");
+let conversationHistory =
+JSON.parse(
+localStorage.getItem("memory")
+) || [];
 
-canvas.width =
-window.innerWidth;
+function saveMemory() {
 
-canvas.height =
-window.innerHeight;
-
-let orbSize = 120;
-
-let pulse = 0;
-
-let isSpeaking = false;
-
-function animateOrb() {
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-  pulse += 0.03;
-
-  const size =
-    orbSize +
-    Math.sin(pulse) * 10;
-
-  const glow =
-    isSpeaking ? 40 : 20;
-
-  const gradient =
-    ctx.createRadialGradient(
-      canvas.width / 2,
-      canvas.height / 2,
-      20,
-      canvas.width / 2,
-      canvas.height / 2,
-      size
-    );
-
-  gradient.addColorStop(
-    0,
-    "#38bdf8"
-  );
-
-  gradient.addColorStop(
-    1,
-    "transparent"
-  );
-
-  ctx.beginPath();
-
-  ctx.arc(
-    canvas.width / 2,
-    canvas.height / 2,
-    size,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fillStyle = gradient;
-
-  ctx.shadowBlur = glow;
-
-  ctx.shadowColor = "#38bdf8";
-
-  ctx.fill();
-
-  requestAnimationFrame(
-    animateOrb
+  localStorage.setItem(
+    "memory",
+    JSON.stringify(
+      conversationHistory
+    )
   );
 }
 
-animateOrb();
+function addMessage(text, sender) {
+
+  const message =
+  document.createElement("div");
+
+  message.classList.add("message");
+
+  message.innerText =
+  `${sender}: ${text}`;
+
+  messagesContainer.appendChild(
+    message
+  );
+
+  messagesContainer.scrollTop =
+  messagesContainer.scrollHeight;
+}
+
+function loadMessages() {
+
+  conversationHistory.forEach(
+    msg => {
+
+      addMessage(
+        msg.content,
+        msg.role
+      );
+    }
+  );
+}
+
+loadMessages();
+
+async function sendMessage() {
+
+  const input =
+  document.getElementById(
+    "user-input"
+  );
+
+  const text =
+  input.value.trim();
+
+  if(!text) return;
+
+  addMessage(text, "You");
+
+  conversationHistory.push({
+    role: "user",
+    content: text
+  });
+
+  saveMemory();
+
+  input.value = "";
+
+  orb.style.transform =
+  "scale(1.15)";
+
+  try {
+
+    const response =
+    await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+
+        method: "POST",
+
+        headers: {
+
+          "Authorization":
+          `Bearer ${API_KEY}`,
+
+          "Content-Type":
+          "application/json"
+        },
+
+        body: JSON.stringify({
+
+          model:
+          "mistralai/mistral-7b-instruct:free",
+
+          messages: [
+
+            {
+              role: "system",
+
+              content: `
+You are Flow,
+a futuristic AI assistant.
+
+You are calm,
+intelligent,
+helpful,
+and conversational.
+`
+            },
+
+            ...conversationHistory
+          ]
+        })
+      }
+    );
+
+    const data =
+    await response.json();
+
+    console.log(data);
+
+    const botReply =
+    data.choices[0]
+    .message.content;
+
+    addMessage(botReply, "Flow");
+
+    conversationHistory.push({
+
+      role: "assistant",
+
+      content: botReply
+    });
+
+    saveMemory();
+
+    speak(botReply);
+
+  } catch(error) {
+
+    console.error(error);
+
+    addMessage(
+      "Error occurred.",
+      "System"
+    );
+  }
+
+  orb.style.transform =
+  "scale(1)";
+}
 
 function speak(text) {
-
-  isSpeaking = true;
-
-  statusText.innerText =
-    "Flow is speaking...";
 
   window.speechSynthesis.cancel();
 
   const speech =
-    new SpeechSynthesisUtterance(text);
+  new SpeechSynthesisUtterance(
+    text
+  );
 
   speech.lang = "en-US";
 
@@ -104,12 +179,13 @@ function speak(text) {
 
   speech.volume = 1;
 
+  orb.style.boxShadow =
+  "0 0 120px #38bdf8";
+
   speech.onend = () => {
 
-    isSpeaking = false;
-
-    statusText.innerText =
-      "Awaiting command...";
+    orb.style.boxShadow =
+    "0 0 60px #38bdf8";
   };
 
   window.speechSynthesis.speak(
@@ -117,94 +193,13 @@ function speak(text) {
   );
 }
 
-async function sendMessage() {
-
-  const input =
-    document.getElementById(
-      "user-input"
-    );
-
-  const text = input.value;
-
-  if(!text.trim()) return;
-
-  input.value = "";
-
-  statusText.innerText =
-    "Thinking...";
-
-  try {
-
-    const response =
-      await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          method: "POST",
-
-          headers: {
-            "Authorization":
-            `Bearer ${API_KEY}`,
-
-            "Content-Type":
-            "application/json"
-          },
-
-          body: JSON.stringify({
-            model:
-            "mistralai/mistral-7b-instruct:free",
-
-            messages: [
-              {
-                role: "system",
-
-                content: `
-You are Flow,
-a futuristic AI assistant.
-
-You are conversational,
-intelligent,
-calm,
-helpful,
-and futuristic.
-`
-              },
-
-              {
-                role: "user",
-                content: text
-              }
-            ]
-          })
-        }
-      );
-
-    const data =
-      await response.json();
-
-    console.log(data);
-
-    const botReply =
-      data.choices[0]
-      .message.content;
-
-    speak(botReply);
-
-  } catch(error) {
-
-    console.error(error);
-
-    statusText.innerText =
-      "Error occurred.";
-  }
-}
-
 let recognition;
 
 function startListening() {
 
   const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
 
   if(!SpeechRecognition) {
 
@@ -216,7 +211,7 @@ function startListening() {
   }
 
   recognition =
-    new SpeechRecognition();
+  new SpeechRecognition();
 
   recognition.lang = "en-US";
 
@@ -224,17 +219,17 @@ function startListening() {
 
   recognition.interimResults = false;
 
-  statusText.innerText =
-    "Listening...";
-
   recognition.start();
+
+  orb.style.boxShadow =
+  "0 0 140px #38bdf8";
 
   recognition.onresult =
   function(event) {
 
     const transcript =
-      event.results[0][0]
-      .transcript;
+    event.results[0][0]
+    .transcript;
 
     document.getElementById(
       "user-input"
@@ -247,26 +242,136 @@ function startListening() {
   function(event) {
 
     console.error(event.error);
-
-    statusText.innerText =
-      "Mic error: " +
-      event.error;
   };
 
   recognition.onend =
   function() {
 
-    if(statusText.innerText
-      === "Listening...") {
-
-      statusText.innerText =
-        "Awaiting command...";
-    }
+    orb.style.boxShadow =
+    "0 0 60px #38bdf8";
   };
 }
 
-setInterval(() => {
+document
+.getElementById("user-input")
+.addEventListener(
+  "keydown",
+  function(event) {
 
-  startListening();
+    if(event.key === "Enter") {
 
-}, 15000);
+      sendMessage();
+    }
+  }
+);
+
+const canvas =
+document.getElementById(
+  "bg-canvas"
+);
+
+const ctx =
+canvas.getContext("2d");
+
+canvas.width =
+window.innerWidth;
+
+canvas.height =
+window.innerHeight;
+
+let particles = [];
+
+for(let i = 0; i < 80; i++) {
+
+  particles.push({
+
+    x: Math.random() *
+    canvas.width,
+
+    y: Math.random() *
+    canvas.height,
+
+    vx: (Math.random() - 0.5)
+    * 0.5,
+
+    vy: (Math.random() - 0.5)
+    * 0.5
+  });
+}
+
+function animateBackground() {
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  for(let p of particles) {
+
+    p.x += p.vx;
+
+    p.y += p.vy;
+
+    if(
+      p.x < 0 ||
+      p.x > canvas.width
+    ) p.vx *= -1;
+
+    if(
+      p.y < 0 ||
+      p.y > canvas.height
+    ) p.vy *= -1;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      2,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+    "#38bdf8";
+
+    ctx.fill();
+  }
+
+  for(let a of particles) {
+
+    for(let b of particles) {
+
+      const dx = a.x - b.x;
+
+      const dy = a.y - b.y;
+
+      const dist =
+      Math.sqrt(
+        dx * dx + dy * dy
+      );
+
+      if(dist < 120) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(a.x, a.y);
+
+        ctx.lineTo(b.x, b.y);
+
+        ctx.strokeStyle =
+        "rgba(56,189,248,0.08)";
+
+        ctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(
+    animateBackground
+  );
+}
+
+animateBackground();
