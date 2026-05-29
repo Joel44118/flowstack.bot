@@ -1,126 +1,95 @@
-const chatBox = document.getElementById("chat-box");
-
 const API_KEY = "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";
 
-let conversationHistory =
-  JSON.parse(localStorage.getItem("memory")) || [];
+const statusText =
+document.getElementById("status");
 
-function getConversation(userMessage) {
+const canvas =
+document.getElementById("orb-canvas");
 
-  const systemPrompt = {
-    role: "system",
-    content: `
-You are Orion, a smart AI assistant.
+const ctx =
+canvas.getContext("2d");
 
-Personality:
-- Conversational
-- Loyal
-- Helpful
-- Intelligent
-- Calm and natural
+canvas.width =
+window.innerWidth;
 
-You remember previous conversations.
-You assist the user with tasks,
-productivity, ideas, and general help.
-`
-  };
+canvas.height =
+window.innerHeight;
 
-  conversationHistory.push({
-    role: "user",
-    content: userMessage
-  });
+let orbSize = 120;
 
-  return [
-    systemPrompt,
-    ...conversationHistory
-  ];
-}
+let pulse = 0;
 
-function saveBotReply(reply) {
+let isSpeaking = false;
 
-  conversationHistory.push({
-    role: "assistant",
-    content: reply
-  });
+function animateOrb() {
 
-  localStorage.setItem(
-    "memory",
-    JSON.stringify(conversationHistory)
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  pulse += 0.03;
+
+  const size =
+    orbSize +
+    Math.sin(pulse) * 10;
+
+  const glow =
+    isSpeaking ? 40 : 20;
+
+  const gradient =
+    ctx.createRadialGradient(
+      canvas.width / 2,
+      canvas.height / 2,
+      20,
+      canvas.width / 2,
+      canvas.height / 2,
+      size
+    );
+
+  gradient.addColorStop(
+    0,
+    "#38bdf8"
+  );
+
+  gradient.addColorStop(
+    1,
+    "transparent"
+  );
+
+  ctx.beginPath();
+
+  ctx.arc(
+    canvas.width / 2,
+    canvas.height / 2,
+    size,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle = gradient;
+
+  ctx.shadowBlur = glow;
+
+  ctx.shadowColor = "#38bdf8";
+
+  ctx.fill();
+
+  requestAnimationFrame(
+    animateOrb
   );
 }
 
-function addMessage(text, sender) {
-
-  const message = document.createElement("div");
-
-  message.classList.add("message");
-  message.classList.add(sender);
-
-  message.innerText = text;
-
-  chatBox.appendChild(message);
-
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-async function sendMessage() {
-
-  const input =
-    document.getElementById("user-input");
-
-  const text = input.value;
-
-  if (text.trim() === "") return;
-
-  addMessage(text, "user");
-handleCommand(text);
-
-  input.value = "";
-
-  try {
-
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-
-        headers: {
-          "Authorization": `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          model: "openai/gpt-3.5-turbo",
-          messages: getConversation(text)
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    console.log(data);
-
-    const botReply =
-      data.choices[0].message.content;
-
-    addMessage(botReply, "bot");
-
-    saveBotReply(botReply);
-
-    speak(botReply);
-
-  } catch(error) {
-
-    console.error(error);
-
-    addMessage(
-      "Something went wrong.",
-      "bot"
-    );
-  }
-}
+animateOrb();
 
 function speak(text) {
+
+  isSpeaking = true;
+
+  statusText.innerText =
+    "Flow is speaking...";
 
   window.speechSynthesis.cancel();
 
@@ -135,24 +104,119 @@ function speak(text) {
 
   speech.volume = 1;
 
-  window.speechSynthesis.speak(speech);
+  speech.onend = () => {
+
+    isSpeaking = false;
+
+    statusText.innerText =
+      "Awaiting command...";
+  };
+
+  window.speechSynthesis.speak(
+    speech
+  );
 }
+
+async function sendMessage() {
+
+  const input =
+    document.getElementById(
+      "user-input"
+    );
+
+  const text = input.value;
+
+  if(!text.trim()) return;
+
+  input.value = "";
+
+  statusText.innerText =
+    "Thinking...";
+
+  try {
+
+    const response =
+      await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+
+          headers: {
+            "Authorization":
+            `Bearer ${API_KEY}`,
+
+            "Content-Type":
+            "application/json"
+          },
+
+          body: JSON.stringify({
+            model:
+            "mistralai/mistral-7b-instruct:free",
+
+            messages: [
+              {
+                role: "system",
+
+                content: `
+You are Flow,
+a futuristic AI assistant.
+
+You are conversational,
+intelligent,
+calm,
+helpful,
+and futuristic.
+`
+              },
+
+              {
+                role: "user",
+                content: text
+              }
+            ]
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    console.log(data);
+
+    const botReply =
+      data.choices[0]
+      .message.content;
+
+    speak(botReply);
+
+  } catch(error) {
+
+    console.error(error);
+
+    statusText.innerText =
+      "Error occurred.";
+  }
+}
+
+let recognition;
 
 function startListening() {
 
-  if (
-    !('webkitSpeechRecognition' in window)
-  ) {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition) {
 
     alert(
-      "Speech recognition only works in Chrome."
+      "Speech recognition unsupported."
     );
 
     return;
   }
 
-  const recognition =
-    new webkitSpeechRecognition();
+  recognition =
+    new SpeechRecognition();
 
   recognition.lang = "en-US";
 
@@ -160,12 +224,17 @@ function startListening() {
 
   recognition.interimResults = false;
 
+  statusText.innerText =
+    "Listening...";
+
   recognition.start();
 
-  recognition.onresult = function(event) {
+  recognition.onresult =
+  function(event) {
 
     const transcript =
-      event.results[0][0].transcript;
+      event.results[0][0]
+      .transcript;
 
     document.getElementById(
       "user-input"
@@ -174,87 +243,30 @@ function startListening() {
     sendMessage();
   };
 
-  recognition.onerror = function(event) {
+  recognition.onerror =
+  function(event) {
 
     console.error(event.error);
 
-    alert(
-      "Microphone error: " + event.error
-    );
+    statusText.innerText =
+      "Mic error: " +
+      event.error;
+  };
+
+  recognition.onend =
+  function() {
+
+    if(statusText.innerText
+      === "Listening...") {
+
+      statusText.innerText =
+        "Awaiting command...";
+    }
   };
 }
 
-function clearMemory() {
+setInterval(() => {
 
-  localStorage.removeItem("memory");
+  startListening();
 
-  conversationHistory = [];
-
-  alert("Memory cleared.");
-}
-function handleCommand(command) {
-
-  command = command.toLowerCase();
-
-  // Open websites
-
-  if(command.includes("open youtube")) {
-
-    window.open(
-      "https://youtube.com",
-      "_blank"
-    );
-
-    return;
-  }
-
-  if(command.includes("open google")) {
-
-    window.open(
-      "https://google.com",
-      "_blank"
-    );
-
-    return;
-  }
-
-  if(command.includes("open github")) {
-
-    window.open(
-      "https://github.com",
-      "_blank"
-    );
-
-    return;
-  }
-
-  // Google search
-
-  if(command.startsWith("search for")) {
-
-    const query =
-      command.replace("search for", "");
-
-    window.open(
-      `https://www.google.com/search?q=${query}`,
-      "_blank"
-    );
-
-    return;
-  }
-
-  // YouTube search
-
-  if(command.startsWith("youtube search")) {
-
-    const query =
-      command.replace("youtube search", "");
-
-    window.open(
-      `https://www.youtube.com/results?search_query=${query}`,
-      "_blank"
-    );
-
-    return;
-  }
-}
+}, 15000);
