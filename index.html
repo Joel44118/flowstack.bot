@@ -1,33 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flowstack Bot</title>
-  <link rel="stylesheet" href="style.css">
+
+  <meta name="viewport"
+  content="width=device-width, initial-scale=1.0">
+
+  <title>Flow AI</title>
+
+  <link rel="stylesheet"
+  href="style.css">
+
 </head>
+
 <body>
 
-  <div class="chat-container">
+<div class="app">
 
-    <div class="header">
-      Flowstack
+  <div class="sidebar">
+
+    <h1>FLOW</h1>
+
+    <div class="status">
+      ● Online
     </div>
 
-    <div id="chat-box" class="chat-box"></div>
+    <button onclick="clearMemory()">
+      Clear Memory
+    </button>
 
-   <div class="input-area">
+  </div>
 
-  <button onclick="startListening()">🎤</button>
+  <div class="main">
 
-  <input type="text" id="user-input"
-  placeholder="Type a message...">
+    <div class="topbar">
 
-  <button onclick="sendMessage()">Send</button>
+      <h2>Flow Assistant</h2>
+
+    </div>
+
+    <div id="chat-box"
+    class="chat-box"></div>
+
+    <div class="input-area">
+
+      <button onclick="startListening()">
+        🎤
+      </button>
+
+      <input type="text"
+      id="user-input"
+      placeholder="Talk to Flow...">
+
+      <button onclick="sendMessage()">
+        Send
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
