@@ -1,31 +1,11 @@
 const API_KEY =
-"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";
-
-/*
-====================================
-MODEL SECTION
-====================================
-
-You can change the model HERE later.
-
-Current model:
-deepseek/deepseek-chat-v3-0324:free
-*/
-
- model:
-"mistralai/mistral-7b-instruct:free",
+"PASTE_YOUR_NEW_API_KEY";
 
 const messagesContainer =
 document.getElementById("messages");
 
 const orb =
 document.querySelector(".orb");
-
-/*
-====================================
-MEMORY SYSTEM
-====================================
-*/
 
 let conversationHistory =
 JSON.parse(
@@ -65,63 +45,15 @@ function loadMessages() {
   conversationHistory.forEach(
     msg => {
 
-      const sender =
-      msg.role === "assistant"
-      ? "Flow"
-      : "You";
-
       addMessage(
         msg.content,
-        sender
+        msg.role
       );
     }
   );
 }
 
 loadMessages();
-
-/*
-====================================
-VOICE SYSTEM
-====================================
-*/
-
-function speak(text) {
-
-  window.speechSynthesis.cancel();
-
-  const speech =
-  new SpeechSynthesisUtterance(
-    text
-  );
-
-  speech.lang = "en-US";
-
-  speech.rate = 1;
-
-  speech.pitch = 1;
-
-  speech.volume = 1;
-
-  orb.style.boxShadow =
-  "0 0 140px #38bdf8";
-
-  speech.onend = () => {
-
-    orb.style.boxShadow =
-    "0 0 60px #38bdf8";
-  };
-
-  window.speechSynthesis.speak(
-    speech
-  );
-}
-
-/*
-====================================
-SEND MESSAGE
-====================================
-*/
 
 async function sendMessage() {
 
@@ -138,9 +70,7 @@ async function sendMessage() {
   addMessage(text, "You");
 
   conversationHistory.push({
-
     role: "user",
-
     content: text
   });
 
@@ -149,7 +79,7 @@ async function sendMessage() {
   input.value = "";
 
   orb.style.transform =
-  "scale(1.1)";
+  "scale(1.15)";
 
   try {
 
@@ -171,7 +101,8 @@ async function sendMessage() {
 
         body: JSON.stringify({
 
-          model: MODEL,
+          model:
+          "mistralai/mistral-7b-instruct:free",
 
           messages: [
 
@@ -179,17 +110,13 @@ async function sendMessage() {
               role: "system",
 
               content: `
-You are Flow.
+You are Flow,
+a futuristic AI assistant.
 
-A futuristic AI assistant.
-
-You are:
-- intelligent
-- calm
-- helpful
-- conversational
-- modern
-- efficient
+You are calm,
+intelligent,
+helpful,
+and conversational.
 `
             },
 
@@ -204,25 +131,11 @@ You are:
 
     console.log(data);
 
-    if(!data.choices) {
-
-      addMessage(
-        "API Error: " +
-        JSON.stringify(data),
-        "System"
-      );
-
-      return;
-    }
-
     const botReply =
     data.choices[0]
     .message.content;
 
-    addMessage(
-      botReply,
-      "Flow"
-    );
+    addMessage(botReply, "Flow");
 
     conversationHistory.push({
 
@@ -240,7 +153,7 @@ You are:
     console.error(error);
 
     addMessage(
-      "System error occurred.",
+      "Error occurred.",
       "System"
     );
   }
@@ -249,11 +162,36 @@ You are:
   "scale(1)";
 }
 
-/*
-====================================
-MICROPHONE SYSTEM
-====================================
-*/
+function speak(text) {
+
+  window.speechSynthesis.cancel();
+
+  const speech =
+  new SpeechSynthesisUtterance(
+    text
+  );
+
+  speech.lang = "en-US";
+
+  speech.rate = 1;
+
+  speech.pitch = 1;
+
+  speech.volume = 1;
+
+  orb.style.boxShadow =
+  "0 0 120px #38bdf8";
+
+  speech.onend = () => {
+
+    orb.style.boxShadow =
+    "0 0 60px #38bdf8";
+  };
+
+  window.speechSynthesis.speak(
+    speech
+  );
+}
 
 let recognition;
 
@@ -284,7 +222,7 @@ function startListening() {
   recognition.start();
 
   orb.style.boxShadow =
-  "0 0 180px #38bdf8";
+  "0 0 140px #38bdf8";
 
   recognition.onresult =
   function(event) {
@@ -304,12 +242,6 @@ function startListening() {
   function(event) {
 
     console.error(event.error);
-
-    addMessage(
-      "Mic Error: " +
-      event.error,
-      "System"
-    );
   };
 
   recognition.onend =
@@ -319,12 +251,6 @@ function startListening() {
     "0 0 60px #38bdf8";
   };
 }
-
-/*
-====================================
-ENTER KEY SUPPORT
-====================================
-*/
 
 document
 .getElementById("user-input")
@@ -338,12 +264,6 @@ document
     }
   }
 );
-
-/*
-====================================
-BACKGROUND NETWORK EFFECT
-====================================
-*/
 
 const canvas =
 document.getElementById(
@@ -429,7 +349,9 @@ function animateBackground() {
       const dy = a.y - b.y;
 
       const dist =
-      Math.sqrt(dx * dx + dy * dy);
+      Math.sqrt(
+        dx * dx + dy * dy
+      );
 
       if(dist < 120) {
 
