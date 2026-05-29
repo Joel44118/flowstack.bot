@@ -11,25 +11,20 @@ body {
   color: white;
 }
 
-.container {
+#bg-canvas {
 
-  position: relative;
+  position: fixed;
 
-  width: 100vw;
+  top: 0;
 
-  height: 100vh;
-}
-
-canvas {
-
-  position: absolute;
+  left: 0;
 
   width: 100%;
 
   height: 100%;
 }
 
-.overlay {
+.orb-container {
 
   position: absolute;
 
@@ -38,71 +33,146 @@ canvas {
   left: 50%;
 
   transform: translate(-50%, -50%);
+}
+
+.orb {
+
+  width: 180px;
+
+  height: 180px;
+
+  border-radius: 50%;
+
+  background:
+  radial-gradient(
+    circle,
+    #38bdf8,
+    #0ea5e9,
+    transparent
+  );
+
+  box-shadow:
+  0 0 60px #38bdf8,
+  0 0 120px #0ea5e9;
+
+  animation:
+  pulse 4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.messages {
+
+  position: absolute;
+
+  top: 20px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 80%;
+
+  max-height: 200px;
+
+  overflow-y: auto;
 
   text-align: center;
 
-  width: 100%;
+  z-index: 5;
 }
 
-h1 {
+.message {
 
-  font-size: 70px;
+  margin-bottom: 12px;
 
-  color: #38bdf8;
+  padding: 12px 18px;
 
-  letter-spacing: 8px;
+  border-radius: 14px;
 
-  margin-bottom: 10px;
+  background: rgba(15, 23, 42, 0.7);
+
+  backdrop-filter: blur(10px);
+
+  display: inline-block;
+
+  max-width: 70%;
 }
 
-#status {
+.input-panel {
 
-  color: #94a3b8;
+  position: fixed;
 
-  margin-bottom: 30px;
+  bottom: 30px;
 
-  font-size: 18px;
-}
+  left: 50%;
 
-.input-area {
+  transform: translateX(-50%);
+
+  width: 70%;
+
+  max-width: 800px;
+
+  background:
+  rgba(15, 23, 42, 0.7);
+
+  backdrop-filter: blur(12px);
+
+  border:
+  1px solid rgba(255,255,255,0.1);
+
+  border-radius: 30px;
 
   display: flex;
 
-  justify-content: center;
+  align-items: center;
 
-  gap: 10px;
+  padding: 10px 15px;
+
+  z-index: 10;
 }
 
-.input-area input {
+.input-panel input {
 
-  width: 300px;
+  flex: 1;
 
-  padding: 15px;
-
-  border-radius: 12px;
+  background: transparent;
 
   border: none;
-
-  background: #0f172a;
-
-  color: white;
 
   outline: none;
+
+  color: white;
+
+  font-size: 16px;
+
+  padding: 10px;
 }
 
-.input-area button {
+.input-panel button {
 
-  padding: 15px 20px;
+  background: transparent;
 
   border: none;
 
-  border-radius: 12px;
-
-  background: #2563eb;
-
   color: white;
+
+  font-size: 22px;
 
   cursor: pointer;
 
-  font-size: 16px;
+  padding: 10px;
 }
