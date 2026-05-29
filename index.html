@@ -17,35 +17,33 @@ href="style.css">
 
 <body>
 
-<div class="container">
+<canvas id="bg-canvas"></canvas>
 
-  <canvas id="orb-canvas"></canvas>
+<div class="orb-container">
 
-  <div class="overlay">
+  <div class="orb"></div>
 
-    <h1>FLOW</h1>
+</div>
 
-    <p id="status">
-      Awaiting command...
-    </p>
+<div id="messages"
+class="messages"></div>
 
-    <div class="input-area">
+<div class="input-panel">
 
-      <button onclick="startListening()">
-        🎤
-      </button>
+  <button id="mic-btn"
+  onclick="startListening()">
+    🎤
+  </button>
 
-      <input type="text"
-      id="user-input"
-      placeholder="Talk to Flow...">
+  <input
+  type="text"
+  id="user-input"
+  placeholder="Talk to Flow...">
 
-      <button onclick="sendMessage()">
-        Send
-      </button>
-
-    </div>
-
-  </div>
+  <button id="send-btn"
+  onclick="sendMessage()">
+    ➤
+  </button>
 
 </div>
 
