@@ -102,7 +102,7 @@ async function sendMessage() {
         body: JSON.stringify({
 
           model:
-          "mistralai/mistral-7b-instruct:free",
+          "deepseek/deepseek-chat-v3-0324:free",
 
           messages: [
 
